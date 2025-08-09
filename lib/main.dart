@@ -164,16 +164,4 @@ class _TickPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Clock1000')),
-      body: Center(
-        child: Text(
-          '$_displayMinutes',
-          style: const TextStyle(fontSize: 80, fontWeight: FontWeight.bold),
-        ),
-      ),
-    );
-  }
 }
