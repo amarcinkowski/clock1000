@@ -15,7 +15,7 @@ jobs:
         flutter-version: '3.22.0'
 
     - name: create
-      run: flutter create
+      run: flutter create .
 
 
     - name: Install dependencies
