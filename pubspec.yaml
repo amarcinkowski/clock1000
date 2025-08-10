@@ -1,14 +1,22 @@
-name: hello_app
-description: A simple Flutter app built in the cloud
-publish_to: "none"
+name: clock1000
+description: "A new Flutter project."
+publish_to: 'none' 
 version: 1.0.0+1
 
 environment:
-  sdk: ">=3.0.0 <4.0.0"
+  sdk: '>=3.4.1 <4.0.0'
 
 dependencies:
   flutter:
     sdk: flutter
+  home_widget: ^0.5.0
+  cupertino_icons: ^1.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
 
 flutter:
   uses-material-design: true
+  
