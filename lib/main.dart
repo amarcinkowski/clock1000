@@ -1,167 +1,192 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:home_widget/home_widget.dart';
+
+// Model przechowujący obliczone dane, aby uniknąć powtarzania kodu
+class TimeData {
+      final String title;
+        final String data;
+          TimeData(this.title, this.data);
+}
+
+// Funkcja obliczająca czas - może być używana zarówno w UI, jak i w tle
+TimeData calculateTime() {
+      final now = DateTime.now();
+        final targetTime = DateTime(now.year, now.month, now.day, 6, 15);
+          String title;
+            String data;
+
+              Duration difference;
+                if (now.isBefore(targetTime)) {
+                        // Przypadek 1: Przed 6:15 dzisiaj
+                            final yesterdayTarget = targetTime.subtract(const Duration(days: 1));
+                                final totalMinutes = now.difference(yesterdayTarget).inMinutes;
+
+                                    if (totalMinutes > 1000) {
+                                              // Jeśli od 6:15 wczoraj minęło więcej niż 1000 min, to liczymy w dół do 6:15 dzisiaj
+                                                    difference = targetTime.difference(now);
+                                                          title = "Zostało do 6:15";
+                                                                data = "${difference.inMinutes} min";
+                                    } else {
+                                              // Jeśli nie, to nadal liczymy w górę od 6:15 wczoraj
+                                                    title = "Minęło od 6:15";
+                                                          data = "$totalMinutes min";
+                                    }
+
+                } else {
+                        // Przypadek 2: Po 6:15 dzisiaj
+                            difference = now.difference(targetTime);
+                                if (difference.inMinutes <= 1000) {
+                                          // Liczymy w górę do 1000 minut
+                                                title = "Minęło od 6:15";
+                                                      data = "${difference.inMinutes} min";
+                                } else {
+                                          // Liczymy w dół do 6:15 jutro
+                                                final nextDayTarget = targetTime.add(const Duration(days: 1));
+                                                      difference = nextDayTarget.difference(now);
+                                                            title = "Zostało do 6:15";
+                                                                  data = "${difference.inMinutes} min";
+                                }
+                }
+                  return TimeData(title, data);
+}
+
+// Funkcja wywoływana w tle. Musi być na najwyższym poziomie (poza klasą).
+@pragma('vm:entry-point')
+Future<void> backgroundCallback(Uri? uri) async {
+      if (uri?.host == 'update_widget') {
+            final timeData = calculateTime();
+                await HomeWidget.saveWidgetData<String>('widget_title', timeData.title);
+                    await HomeWidget.saveWidgetData<String>('widget_data', timeData.data);
+                        await HomeWidget.updateWidget(name: 'ClockWidgetProvider', iOSName: 'ClockWidgetProvider');
+      }
+}
 
 void main() {
-  runApp(const MyApp());
+      WidgetsFlutterBinding.ensureInitialized();
+        HomeWidget.registerBackgroundCallback(backgroundCallback);
+          runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+      const MyApp({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return const MaterialApp(
-      title: 'Clock1000',
-      home: ClockPage(),
-    );
-  }
+        @override
+          Widget build(BuildContext context) {
+                return MaterialApp(
+                          title: 'Clock 1000',
+                                theme: ThemeData.dark(useMaterial3: true),
+                                      home: const MyHomePage(),
+                );
+          }
 }
 
-class ClockPage extends StatefulWidget {
-  const ClockPage({super.key});
+class MyHomePage extends StatefulWidget {
+      const MyHomePage({super.key});
 
-  @override
-  State<ClockPage> createState() => _ClockPageState();
+        @override
+          State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _ClockPageState extends State<ClockPage> {
-  late Timer _timer;
-  int _displayMinutes = 0;
+class _MyHomePageState extends State<MyHomePage> {
+      TimeData _timeData = TimeData("Ładowanie...", "");
+        Timer? _timer;
 
-  static const int maxMinutes = 1000;
+          @override
+            void initState() {
+                    super.initState();
+                        _initForWidget();
+                            _startTimer();
+            }
 
-  @override
-  void initState() {
-    super.initState();
-    _updateTime();
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) => _updateTime());
-  }
+              void _initForWidget() {
+                    HomeWidget.scheduleBackgroundUpdate(frequency: const Duration(minutes: 15));
+                        _updateWidget();
+              }
 
-  @override
-  void dispose() {
-    _timer.cancel();
-    super.dispose();
-  }
+                void _startTimer() {
+                        _updateTime(); 
+                            _timer = Timer.periodic(const Duration(seconds: 1), (timer) => _updateTime());
+                }
 
-  void _updateTime() {
-    final now = DateTime.now();
+                  void _updateTime() {
+                        setState(() {
+                                  _timeData = calculateTime();
+                        });
+                  }
+                    
+                      Future<void> _updateWidget() async {
+                            final timeData = calculateTime();
+                                await HomeWidget.saveWidgetData<String>('widget_title', timeData.title);
+                                    await HomeWidget.saveWidgetData<String>('widget_data', timeData.data);
+                                        await HomeWidget.updateWidget(name: 'ClockWidgetProvider', iOSName: 'ClockWidgetProvider');
+                      }
 
-    final startToday = DateTime(now.year, now.month, now.day, 6, 15);
+                        @override
+                          void dispose() {
+                                _timer?.cancel();
+                                    super.dispose();
+                          }
 
-    int minutesElapsed;
-    if (now.isBefore(startToday)) {
-      final startYesterday = startToday.subtract(const Duration(days: 1));
-      minutesElapsed = now.difference(startYesterday).inMinutes;
-    } else {
-      minutesElapsed = now.difference(startToday).inMinutes;
-    }
-
-    if (minutesElapsed <= maxMinutes) {
-      _displayMinutes = minutesElapsed < 0 ? 0 : minutesElapsed;
-    } else {
-      final nextStart = startToday.add(const Duration(days: 1));
-      final minutesRemaining = nextStart.difference(now).inMinutes;
-      _displayMinutes = minutesRemaining < 0 ? 0 : minutesRemaining;
-    }
-
-    setState(() {});
-  }
-
-  Widget _buildProgressBar() {
-    double progressValue = _displayMinutes / maxMinutes;
-    if (progressValue > 1) progressValue = 1;
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        SizedBox(
-          height: 20,
-          child: CustomPaint(
-            painter: _TickPainter(maxTicks: 10),
-            child: LinearProgressIndicator(
-              value: progressValue,
-              backgroundColor: Colors.grey.shade300,
-              color: Colors.blue,
-            ),
-          ),
-        ),
-        const SizedBox(height: 8),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: List.generate(
-              11,
-              (index) => Text(
-                    '${index * 100}',
-                    style: const TextStyle(fontSize: 12),
-                  )),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildFormattedNumber(int number) {
-    final text = number.toString().padLeft(3, '0');
-    final firstTwo = text.substring(0, 2);
-    final lastOne = text.substring(2);
-
-    return RichText(
-      text: TextSpan(
-        children: [
-          TextSpan(
-            text: firstTwo,
-            style: const TextStyle(
-                fontSize: 80, fontWeight: FontWeight.bold, color: Colors.black),
-          ),
-          TextSpan(
-            text: lastOne,
-            style: TextStyle(
-                fontSize: 80,
-                fontWeight: FontWeight.bold,
-                color: Colors.black.withOpacity(0.4)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Clock1000')),
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _buildFormattedNumber(_displayMinutes),
-            const SizedBox(height: 32),
-            _buildProgressBar(),
-          ],
-        ),
-      ),
-    );
-  }
+                            @override
+                              Widget build(BuildContext context) {
+                                    return Scaffold(
+                                              appBar: AppBar(
+                                                        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+                                                                title: const Text("Clock 1000"),
+                                              ),
+                                                    body: Center(
+                                                                child: Column(
+                                                                              mainAxisAlignment: MainAxisAlignment.center,
+                                                                                        children: <Widget>[
+                                                                                                        Text(
+                                                                                                                          _timeData.data,
+                                                                                                                                        style: Theme.of(context).textTheme.headlineMedium,
+                                                                                                        ),
+                                                                                                                    Text(
+                                                                                                                                      _timeData.title,
+                                                                                                                    ),
+                                                                                        ],
+                                                                ),
+                                                    ),
+                                                          floatingActionButton: FloatingActionButton(
+                                                                    onPressed: _updateWidget,
+                                                                            tooltip: 'Odśwież widżet',
+                                                                                    child: const Icon(Icons.update),
+                                                          ),
+                                    );
+                              }
 }
 
-class _TickPainter extends CustomPainter {
-  final int maxTicks;
-  _TickPainter({required this.maxTicks});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.black54
-      ..strokeWidth = 1;
-
-    final tickHeight = 8.0;
-    final tickSpacing = size.width / maxTicks;
-
-    for (int i = 0; i <= maxTicks; i++) {
-      final x = i * tickSpacing;
-      canvas.drawLine(Offset(x, 0), Offset(x, tickHeight), paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+                                                          )
+                                                                                                                    )
+                                                                                                        )
+                                                                                        ]
+                                                                )
+                                                    )
+                                              )
+                                    )
+                              }
+                          }
+                      }
+                        })
+                  }
+                }
+              }
+            }
+}
+}
+                )
+          }
+}
+}
+      }
+}
+                                }
+                                }
+                }
+                                    }
+                                    }
+                }
+}
 }
