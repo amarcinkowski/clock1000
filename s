@@ -1,3 +1,5 @@
+# Aktualizacja pliku build.gradle.kts do compileSdk 35
+cat > android/app/build.gradle.kts << 'EOF'
 plugins {
     id("com.android.application")
     kotlin("android")
@@ -51,3 +53,6 @@ flutter {
 
 dependencies {
 }
+EOF
+
+echo "✅ Plik build.gradle.kts został zaktualizowany. Ustawiono compileSdk i targetSdk na 35."
