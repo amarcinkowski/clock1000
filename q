@@ -1,3 +1,5 @@
+# Nadpisanie pliku build.gradle.kts z dodanymi importami i wersją NDK
+cat > android/app/build.gradle.kts << 'EOF'
 plugins {
     id("com.android.application")
     kotlin("android")
@@ -49,3 +51,6 @@ flutter {
 
 dependencies {
 }
+EOF
+
+echo "✅ Plik android/app/build.gradle.kts został naprawiony."
