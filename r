@@ -1,3 +1,5 @@
+# Ostateczna, poprawiona wersja pliku build.gradle.kts
+cat > android/app/build.gradle.kts << 'EOF'
 plugins {
     id("com.android.application")
     kotlin("android")
@@ -53,3 +55,6 @@ flutter {
 
 dependencies {
 }
+EOF
+
+echo "✅ Plik build.gradle.kts został przepisany z poprawną składnią Kotlin DSL."
