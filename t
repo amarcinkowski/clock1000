@@ -1,3 +1,5 @@
+# Nadpisanie pliku ClockWidgetProvider.kt kodem zgodnym z nową wersją pakietu home_widget
+cat > android/app/src/main/kotlin/com/amarcinkowski/clock1000/ClockWidgetProvider.kt << 'EOF'
 package com.amarcinkowski.clock1000
 
 import android.app.PendingIntent
@@ -46,3 +48,6 @@ class ClockWidgetProvider : AppWidgetProvider() {
         }
     }
 }
+EOF
+
+echo "✅ Plik ClockWidgetProvider.kt został naprawiony. Spróbuj uruchomić budowanie ponownie."
