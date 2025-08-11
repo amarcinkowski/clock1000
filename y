@@ -1,3 +1,5 @@
+# Nadpisanie pliku ClockWidgetProvider.kt z poprawioną logiką tworzenia PendingIntent
+cat > android/app/src/main/kotlin/com/amarcinkowski/clock1000/ClockWidgetProvider.kt << 'EOF'
 package com.amarcinkowski.clock1000
 
 import android.app.PendingIntent
@@ -42,3 +44,6 @@ class ClockWidgetProvider : AppWidgetProvider() {
         }
     }
 }
+EOF
+
+echo "✅ Plik ClockWidgetProvider.kt został poprawiony. Logika tworzenia flagi jest teraz bardziej bezpośrednia."
