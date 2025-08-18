@@ -1,7 +1,15 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:home_widget/home_widget.dart';
+
+// App Group ID for iOS. This is not used on Android.
+const String appGroupId = 'group.com.example.hello_app';
+const String iOSWidgetName = 'ClockWidget';
+const String androidWidgetName = 'WidgetProvider';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  HomeWidget.setAppGroupId(appGroupId);
   runApp(const MyApp());
 }
 
@@ -63,6 +71,13 @@ class _ClockPageState extends State<ClockPage> {
       final minutesRemaining = nextStart.difference(now).inMinutes;
       _displayMinutes = minutesRemaining < 0 ? 0 : minutesRemaining;
     }
+
+    // Send data to widget
+    HomeWidget.saveWidgetData<int>('counter', _displayMinutes);
+    HomeWidget.updateWidget(
+      name: androidWidgetName,
+      iOSName: iOSWidgetName,
+    );
 
     setState(() {});
   }
