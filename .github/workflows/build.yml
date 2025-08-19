@@ -17,10 +17,16 @@ jobs:
     - name: create
       run: flutter create .
 
+    - name: Print build.gradle before modification
+      run: cat android/build.gradle
+
     - name: Update Kotlin Version
       run: |
         sed -i "s/ext.kotlin_version = .*/ext.kotlin_version = '1.9.0'/g" android/build.gradle
         sed -i "s/com.android.tools.build:gradle:.*/com.android.tools.build:gradle:8.1.0/g" android/build.gradle
+
+    - name: Print build.gradle after modification
+      run: cat android/build.gradle
 
     - name: Install dependencies
       run: flutter pub get
