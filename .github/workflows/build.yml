@@ -17,6 +17,22 @@ jobs:
     - name: create
       run: flutter create .
 
+    - name: Debug Android folder
+      run: |
+        ls -R android
+        echo "--- build.gradle content before sed ---"
+        cat android/build.gradle
+
+    - name: Update Kotlin Version
+      run: |
+        sed -i "s/ext.kotlin_version = .*/ext.kotlin_version = '1.9.0'/g" android/build.gradle
+        sed -i "s/com.android.tools.build:gradle:.*/com.android.tools.build:gradle:8.1.0/g" android/build.gradle
+
+    - name: Debug Android folder after sed
+      run: |
+        echo "--- build.gradle content after sed ---"
+        cat android/build.gradle
+
     - name: Install dependencies
       run: flutter pub get
 
