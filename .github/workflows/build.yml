@@ -2,7 +2,7 @@ name: Build APK
 
 on:
   push:
-    branches: [ "fix/android-build-structure" ]
+    branches: [ "feature/android-widget-1" ]
 
 jobs:
   build:
