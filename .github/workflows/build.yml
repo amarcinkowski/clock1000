@@ -2,7 +2,7 @@ name: Build APK
 
 on:
   push:
-    branches: [ "fix/dependency-version" ]
+    branches: [ "fix/android-build-structure" ]
 
 jobs:
   build:
@@ -16,11 +16,6 @@ jobs:
 
     - name: create
       run: flutter create .
-
-    - name: Update Kotlin Version
-      run: |
-        sed -i "s/ext.kotlin_version = .*/ext.kotlin_version = '1.9.0'/g" android/build.gradle
-        sed -i "s/com.android.tools.build:gradle:.*/com.android.tools.build:gradle:8.1.0/g" android/build.gradle
 
     - name: Install dependencies
       run: flutter pub get
