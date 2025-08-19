@@ -1,8 +1,6 @@
 name: Build APK
 
-on:
-  push:
-    branches: [ "fix/widget-visibility" ]
+on: [push]
 
 jobs:
   build:
